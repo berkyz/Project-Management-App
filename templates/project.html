@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- BAY 1: Proje Kontrol Ünitesi & Üye Yönetimi (Kırmızı Panel) -->
+<section class="cyber-panel panel-red">
+    <h2 class="panel-title">
+        <span><i class="fa-solid fa-sliders"></i> PROJE YÖNETİMİ</span>
+        <span style="font-size: 0.75rem; color: var(--rgb-red);">[ID: {{ project.id }}]</span>
+    </h2>
+    
+    <form action="{{ url_for('update_project', project_id=project.id) }}" method="POST" class="cyber-form">
+        <div class="form-group">
+            <label for="proj_name">Proje Adı</label>
+            <input type="text" id="proj_name" name="name" class="cyber-input" value="{{ project.name }}" required autocomplete="off">
+        </div>
+        <div class="form-group">
+            <label for="proj_desc">Açıklama</label>
+            <textarea id="proj_desc" name="description" class="cyber-input" rows="3" style="resize: none;">{{ project.description }}</textarea>
+        </div>
+        <button type="submit" class="cyber-btn cyber-btn-red">
+            <i class="fa-solid fa-save"></i> BİLGİLERİ GÜNCELLE
+        </button>
+    </form>
+
+    <!-- PROJE ÜYE YÖNETİMİ -->
+    <div style="border-top: 1px solid var(--rgb-gray); padding-top: 15px; margin-top: 10px;">
+        <h3 style="font-family: 'Orbitron', sans-serif; font-size: 0.9rem; color: var(--rgb-red); margin-bottom: 10px;">
+            <i class="fa-solid fa-users"></i> PROJE ÜYELERİ
+        </h3>
+
+        <!-- Üye Ekleme Formu -->
+        <form action="{{ url_for('add_user_to_project', project_id=project.id) }}" method="POST" class="cyber-form" style="margin-bottom: 15px; padding: 10px;">
+            <div class="form-group">
+                <label for="user_id">Ekip Üyesi Ekle</label>
+                <select id="user_id" name="user_id" class="cyber-input" style="background: rgb(28, 30, 43);" required>
+                    <option value="" disabled selected>Üye seçin...</option>
+                    {% for user in non_members %}
+                        <option value="{{ user.id }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="cyber-btn cyber-btn-red" style="padding: 6px 12px; font-size: 0.75rem;">
+                <i class="fa-solid fa-plus"></i> PROJEYE EKLE
+            </button>
+        </form>
+
+        <!-- Mevcut Üyelerin Listesi -->
+        <div style="display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto;">
+            {% if project_users %}
+                {% for p_user in project_users %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 6px 12px; border: 1px solid var(--rgb-gray); clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);">
+                        <span style="font-size: 0.85rem; color: var(--rgb-text-high);"><i class="fa-solid fa-user"></i> {{ p_user.username }}</span>
+                        <a href="{{ url_for('remove_user_from_project', project_id=project.id, user_id=p_user.id) }}" 
+                           style="color: var(--rgb-red); font-size: 0.75rem; text-decoration: none;" 
+                           onclick="return confirm('Üyeyi projeden çıkarmak istediğinize emin misiniz?')">
+                            Kaldır
+                        </a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <span style="font-size: 0.8rem; color: var(--rgb-text-low); font-style: italic;">Projeye kayıtlı üye bulunmamaktadır.</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div style="border-top: 1px solid var(--rgb-gray); padding-top: 15px; margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+        <a href="{{ url_for('dashboard') }}" class="cyber-btn" style="border-color: var(--rgb-text-mid); color: var(--rgb-text-mid); width: 100%;">
+            <i class="fa-solid fa-chevron-left"></i> KONTROL PANELİNE DÖN
+        </a>
+    </div>
+</section>
+
+<!-- BAY 2: Projeye Ait Görev Matrisi (Yeşil Panel) -->
+<section class="cyber-panel panel-green" style="grid-column: span 1;">
+    <h2 class="panel-title">
+        <span><i class="fa-solid fa-microchip"></i> GÖREV MATRİSİ</span>
+        <span style="font-size: 0.75rem; color: var(--rgb-green);">[{{ tasks|length }} GÖREV]</span>
+    </h2>
+
+    <div class="tasks-grid">
+        {% if tasks %}
+            {% for task in tasks %}
+                <div class="task-card status-{{ task.status }}">
+                    <div class="task-header">
+                        <h4>{{ task.title }}</h4>
+                        <span class="status-badge {{ task.status }}">
+                            {{ 'Beklemede' if task.status == 'Pending' else ('Çalışılıyor' if task.status == 'In Progress' else 'Tamamlandı') }}
+                        </span>
+                    </div>
+                    
+                    <p>{{ task.description or 'Açıklama girilmedi.' }}</p>
+
+                    <!-- Atanan Kişi Bilgisi -->
+                    <div style="font-size: 0.85rem; color: var(--rgb-text-mid); display: flex; align-items: center; gap: 5px; background: rgba(0, 0, 0, 0.15); padding: 5px 10px; border: 1px dashed rgba(40, 255, 150, 0.2); clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);">
+                        <i class="fa-solid fa-user-gear" style="color: var(--rgb-green);"></i> 
+                        <span>Görevli: <strong>{{ task.assignee_name or 'Atanmamış' }}</strong></span>
+                    </div>
+                    
+                    <!-- Görev Etiketleri -->
+                    <div class="task-tags-row">
+                        {% if task.tags %}
+                            {% for tag in task.tags %}
+                                <span class="cyber-tag">
+                                    <i class="fa-solid fa-tag"></i> {{ tag.name }}
+                                    <a href="{{ url_for('remove_tag_from_task', task_id=task.id, tag_id=tag.id, project_id=project.id) }}" class="cyber-tag-remove" title="Etiketi Kaldır">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </a>
+                                </span>
+                            {% endfor %}
+                        {% else %}
+                            <span style="font-size: 0.75rem; color: var(--rgb-text-low); font-style: italic;">Etiket atanmadı.</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Görev Kontrolleri (Durum ve Atama Güncelleme, Etiket Ekleme) -->
+                    <div class="task-actions">
+                        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                            <!-- Durum ve Görevli Güncelleme Formu -->
+                            <form action="{{ url_for('update_task', task_id=task.id) }}" method="POST" style="display: flex; flex-direction: column; gap: 8px;">
+                                <input type="hidden" name="project_id" value="{{ project.id }}">
+                                <input type="hidden" name="title" value="{{ task.title }}">
+                                <input type="hidden" name="description" value="{{ task.description }}">
+                                
+                                <div style="display: flex; gap: 5px;">
+                                    <!-- Durum -->
+                                    <select name="status" class="cyber-select" style="flex: 1;">
+                                        <option value="Pending" {% if task.status == 'Pending' %}selected{% endif %}>Beklemede</option>
+                                        <option value="In Progress" {% if task.status == 'In Progress' %}selected{% endif %}>Çalışılıyor</option>
+                                        <option value="Completed" {% if task.status == 'Completed' %}selected{% endif %}>Tamamlandı</option>
+                                    </select>
+
+                                    <!-- Görevli -->
+                                    <select name="assigned_to" class="cyber-select" style="flex: 1;">
+                                        <option value="">Atanmamış</option>
+                                        {% for p_user in all_users %}
+                                            <option value="{{ p_user.id }}" {% if task.assigned_to == p_user.id %}selected{% endif %}>{{ p_user.username }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="submit" class="cyber-btn cyber-btn-green" style="padding: 4px 10px; font-size: 0.75rem; width: 100%;">
+                                    <i class="fa-solid fa-arrows-rotate"></i> Durum / Görevli Güncelle
+                                </button>
+                            </form>
+
+                            <!-- Etiket Atama Formu -->
+                            <form action="{{ url_for('add_tag_to_task', task_id=task.id) }}" method="POST" class="action-form">
+                                <input type="hidden" name="project_id" value="{{ project.id }}">
+                                <select name="tag_id" class="cyber-select" onchange="this.form.submit()" style="width: 100%;">
+                                    <option value="" disabled selected>+ Etiket Ekle</option>
+                                    {% for tag in all_tags %}
+                                        {% if tag not in task.tags %}
+                                            <option value="{{ tag.id }}">{{ tag.name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
+                        <a href="{{ url_for('delete_task', task_id=task.id, project_id=project.id) }}" 
+                           class="delete-link" 
+                           onclick="return confirm('Bu görevi silmek istediğinize emin misiniz?')">
+                            <i class="fa-solid fa-trash"></i> Görevi Sil
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else: %}
+            <div style="grid-column: span 2; text-align: center; padding: 40px; border: 1px dashed var(--rgb-gray); color: var(--rgb-text-low);">
+                <i class="fa-solid fa-list-check" style="font-size: 2rem; margin-bottom: 15px; display: block;"></i>
+                Bu projede henüz görev tanımlanmamış. Sağ taraftaki paneli kullanarak yeni bir görev oluşturun.
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- BAY 3: Görev Giriş Terminali (Mavi Panel) -->
+<section class="cyber-panel panel-blue">
+    <h2 class="panel-title">
+        <span><i class="fa-solid fa-circle-plus"></i> GÖREV GİRİŞ PANELİ</span>
+        <span style="font-size: 0.75rem; color: var(--rgb-blue);">[YENİ_GÖREV]</span>
+    </h2>
+    
+    <form action="{{ url_for('create_task', project_id=project.id) }}" method="POST" class="cyber-form">
+        <div class="form-group">
+            <label for="task_title">Görev Başlığı</label>
+            <input type="text" id="task_title" name="title" class="cyber-input" placeholder="Yapılacak iş..." required autocomplete="off">
+        </div>
+        <div class="form-group">
+            <label for="task_desc">Açıklama / Detay</label>
+            <textarea id="task_desc" name="description" class="cyber-input" rows="3" placeholder="Görev parametreleri..." style="resize: none;"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="assigned_to_select">Görevli Ata (Üye)</label>
+            <select id="assigned_to_select" name="assigned_to" class="cyber-input" style="background: rgb(28, 30, 43);">
+                <option value="">Görevli Yok (Atanmamış)</option>
+                {% for p_user in all_users %}
+                    <option value="{{ p_user.id }}">{{ p_user.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="task_status">İlk Durum</label>
+            <select id="task_status" name="status" class="cyber-input" style="background: rgb(28, 30, 43);">
+                <option value="Pending">Beklemede (Pending)</option>
+                <option value="In Progress">Çalışılıyor (In Progress)</option>
+                <option value="Completed">Tamamlandı (Completed)</option>
+            </select>
+        </div>
+        <button type="submit" class="cyber-btn cyber-btn-blue">
+            <i class="fa-solid fa-square-plus"></i> GÖREV EKLE
+        </button>
+    </form>
+    
+    <div style="margin-top: 15px; border-top: 1px solid var(--rgb-gray); padding-top: 15px;">
+        <h4 style="font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: var(--rgb-blue); margin-bottom: 8px;">KILAVUZ:</h4>
+        <p style="font-size: 0.8rem; color: var(--rgb-text-mid); line-height: 1.4; margin-bottom: 10px;">
+            Bir göreve üye atayabilmek için öncelikle o üyeyi sol paneldeki <strong>"Proje Üyeleri"</strong> kısmından projeye eklemeniz gerekir.
+        </p>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- BAY 1: Proje Oluşturma Terminali (Kırmızı Panel) -->
+<section class="cyber-panel panel-red">
+    <h2 class="panel-title">
+        <span><i class="fa-solid fa-plus-circle"></i> YENİ PROJE EKLE</span>
+        <span style="font-size: 0.75rem; color: var(--rgb-red);">[PROJE_GİRİŞİ]</span>
+    </h2>
+    <form action="{{ url_for('create_project') }}" method="POST" class="cyber-form">
+        <div class="form-group">
+            <label for="name">Proje Adı</label>
+            <input type="text" id="name" name="name" class="cyber-input" placeholder="Proje adı..." required autocomplete="off">
+        </div>
+        <div class="form-group">
+            <label for="description">Proje Açıklaması</label>
+            <textarea id="description" name="description" class="cyber-input" rows="4" placeholder="Projenin temel hedefleri..." style="resize: none;"></textarea>
+        </div>
+        <button type="submit" class="cyber-btn cyber-btn-red">
+            <i class="fa-solid fa-square-plus"></i> PROJE OLUŞTUR
+        </button>
+    </form>
+    
+    <div style="margin-top: 15px; font-size: 0.8rem; color: var(--rgb-text-low); line-height: 1.4;">
+        <p><i class="fa-solid fa-microchip"></i> <strong>Sistem Notu:</strong> Eklenen projeler veritabanına anında işlenir. Alt görevler ve proje üyeleri projelerin detay ekranlarından yönetilir.</p>
+    </div>
+</section>
+
+<!-- BAY 2: Aktif Projeler Matrisi (Yeşil Panel) -->
+<section class="cyber-panel panel-green" style="grid-column: span 1;">
+    <h2 class="panel-title">
+        <span><i class="fa-solid fa-folder-tree"></i> PROJELER LİSTESİ</span>
+        <span style="font-size: 0.75rem; color: var(--rgb-green);">[{{ projects|length }} ADET]</span>
+    </h2>
+    
+    <div class="project-list">
+        {% if projects %}
+            {% for proj in projects %}
+                <div class="project-card">
+                    <div class="project-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <h3>{{ proj.name }}</h3>
+                        <a href="{{ url_for('delete_project', project_id=proj.id) }}" 
+                           class="delete-link" 
+                           onclick="return confirm('Bu projeyi ve ilişkili TÜM görevleri silmek istediğinize emin misiniz?')"
+                           title="Projeyi Sil">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </a>
+                    </div>
+                    <p>{{ proj.description or 'Açıklama belirtilmedi.' }}</p>
+                    
+                    <!-- İlerleme Barı -->
+                    <div class="progress-matrix">
+                        <div class="progress-label-wrap">
+                            <span>PROJE İLERLEME DURUMU</span>
+                            <span>%{{ proj.progress }}</span>
+                        </div>
+                        <div class="matrix-bar-bg">
+                            <div class="matrix-bar-fill" style="width: {{ proj.progress }}%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="project-footer">
+                        <span class="task-counter">
+                            <i class="fa-solid fa-list-check"></i> {{ proj.completed_tasks }} / {{ proj.total_tasks }} GÖREV TAMAMLANDI
+                        </span>
+                        <a href="{{ url_for('project_detail', project_id=proj.id) }}" class="cyber-btn cyber-btn-green" style="padding: 6px 12px; font-size: 0.75rem;">
+                            DETAYLAR <i class="fa-solid fa-angles-right"></i>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else: %}
+            <div style="text-align: center; padding: 40px; border: 1px dashed var(--rgb-gray); color: var(--rgb-text-low);">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; margin-bottom: 15px; display: block;"></i>
+                Sistemde kayıtlı proje bulunamadı. Sol taraftaki konsolu kullanarak ilk projeyi oluşturun.
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- BAY 3: Sistem İndeksi & Etiketler (Mavi Panel) -->
+<section class="cyber-panel panel-blue">
+    <h2 class="panel-title">
+        <span><i class="fa-solid fa-network-wired"></i> ETİKETLER SÜZGECİ</span>
+        <span style="font-size: 0.75rem; color: var(--rgb-blue);">[FİLTRE]</span>
+    </h2>
+    <p style="font-size: 0.85rem; color: var(--rgb-text-mid);">
+        Belirli etiketlere sahip görevleri listelemek ve durumlarını takip etmek için etiketleri kullanın:
+    </p>
+    
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+        <h4 style="font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: var(--rgb-blue);">SİSTEM ETİKETLERİ:</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            {% if all_tags %}
+                {% for tag in all_tags %}
+                    <a href="{{ url_for('tasks_by_tag', tag_id=tag.id) }}" class="cyber-tag">
+                        <i class="fa-solid fa-tag"></i> {{ tag.name }}
+                    </a>
+                {% endfor %}
+            {% else %}
+                <span style="font-size: 0.8rem; color: var(--rgb-text-low);">Kayıtlı etiket yok.</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div style="border-top: 1px solid var(--rgb-gray); padding-top: 15px; margin-top: 15px;">
+        <h4 style="font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: var(--rgb-blue); margin-bottom: 10px;">SİSTEM PANEL YAPISI:</h4>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.8rem; color: var(--rgb-text-mid);">
+            <li><span style="color: var(--rgb-red); font-weight: bold;">Kırmızı Modül:</span> Veri Giriş ve Yönetim Arayüzü</li>
+            <li><span style="color: var(--rgb-green); font-weight: bold;">Yeşil Modül:</span> Proje ve Görev Listeleri</li>
+            <li><span style="color: var(--rgb-blue); font-weight: bold;">Mavi Modül:</span> Üye, Rol ve Etiket Tanımlamaları</li>
+        </ul>
+    </div>
+</section>
+{% endblock %}

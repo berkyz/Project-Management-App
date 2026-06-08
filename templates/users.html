@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- BAY 1: Yeni Ekip Üyesi Ekle (Kırmızı Panel) -->
+<section class="cyber-panel panel-red">
+    <h2 class="panel-title">
+        <span><i class="fa-solid fa-user-plus"></i> EKİP ÜYESİ EKLE</span>
+        <span style="font-size: 0.75rem; color: var(--rgb-red);">[SİSTEM_KULLANICISI]</span>
+    </h2>
+    <form action="{{ url_for('manage_users') }}" method="POST" class="cyber-form">
+        <div class="form-group">
+            <label for="username">Kullanıcı Adı</label>
+            <input type="text" id="username" name="username" class="cyber-input" placeholder="Kullanıcı adı..." required autocomplete="off">
+        </div>
+        <div class="form-group">
+            <label for="email">E-posta Adresi</label>
+            <input type="email" id="email" name="email" class="cyber-input" placeholder="E-posta adresi..." autocomplete="off">
+        </div>
+        <button type="submit" class="cyber-btn cyber-btn-red">
+            <i class="fa-solid fa-square-plus"></i> KULLANICI EKLE
+        </button>
+    </form>
+    
+    <div style="margin-top: 15px; font-size: 0.8rem; color: var(--rgb-text-low); line-height: 1.4;">
+        <p><i class="fa-solid fa-microchip"></i> <strong>Sistem Notu:</strong> Eklenen kullanıcılar sistem geneline kaydedilir. Projelere üye olarak atanabilir ve kendilerine görev tanımlanabilir.</p>
+    </div>
+</section>
+
+<!-- BAY 2: Ekip Üyeleri Havuzu (Mavi Panel) -->
+<section class="cyber-panel panel-blue" style="grid-column: span 2;">
+    <h2 class="panel-title">
+        <span><i class="fa-solid fa-users-viewfinder"></i> EKİP ÜYELERİ LİSTESİ</span>
+        <span style="font-size: 0.75rem; color: var(--rgb-blue);">[{{ users|length }} KİŞİ]</span>
+    </h2>
+    
+    <div class="project-list">
+        {% if users %}
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--rgb-gray); color: var(--rgb-blue); font-family: 'Orbitron', sans-serif; font-size: 0.85rem;">
+                        <th style="padding: 10px;">ID</th>
+                        <th style="padding: 10px;">KULLANICI ADI</th>
+                        <th style="padding: 10px;">E-POSTA ADRESİ</th>
+                        <th style="padding: 10px; text-align: right;">İŞLEMLER</th>
+                    </tr>
+                </thead>
+                <tbody style="font-size: 0.95rem;">
+                    {% for user in users %}
+                        <tr style="border-bottom: 1px solid rgba(0, 210, 255, 0.05);">
+                            <td style="padding: 12px; color: var(--rgb-text-low);">#{{ user.id }}</td>
+                            <td style="padding: 12px; font-weight: bold; color: var(--rgb-text-high);">{{ user.username }}</td>
+                            <td style="padding: 12px; color: var(--rgb-text-mid);">{{ user.email or '-' }}</td>
+                            <td style="padding: 12px; text-align: right;">
+                                <a href="{{ url_for('delete_user', user_id=user.id) }}" 
+                                   class="delete-link" 
+                                   onclick="return confirm('Bu kullanıcıyı silmek istediğinize emin misiniz? Atandığı tüm görevler atamasız kalacaktır.')"
+                                   title="Kullanıcıyı Sil">
+                                    <i class="fa-solid fa-trash-can"></i> Kullanıcıyı Sil
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else: %}
+            <div style="text-align: center; padding: 40px; border: 1px dashed var(--rgb-gray); color: var(--rgb-text-low);">
+                <i class="fa-solid fa-user-slash" style="font-size: 2.2rem; margin-bottom: 15px; display: block;"></i>
+                Sistemde kayıtlı ekip üyesi bulunamadı. Sol taraftaki konsolu kullanarak ilk kullanıcıyı ekleyin.
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

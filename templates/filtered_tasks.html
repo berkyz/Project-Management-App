@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- BAY 1: Filtre Detay Paneli (Mavi Panel) -->
+<section class="cyber-panel panel-blue">
+    <h2 class="panel-title">
+        <span><i class="fa-solid fa-filter"></i> FİLTRE DETAYI</span>
+        <span style="font-size: 0.75rem; color: var(--rgb-blue);">[B_MATRİS]</span>
+    </h2>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+        <p style="font-size: 0.9rem; color: var(--rgb-text-mid);">
+            Şu anda sistem genelinde aşağıdaki etiketle filtrelenmiş görevleri inceliyorsunuz:
+        </p>
+        <div style="background: rgba(0, 210, 255, 0.08); padding: 15px; border: 1px solid var(--rgb-blue); text-align: center; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);">
+            <span style="font-family: 'Orbitron', sans-serif; font-size: 1.4rem; color: var(--rgb-blue); font-weight: bold; text-shadow: 0 0 10px var(--rgba-blue-glow);">
+                <i class="fa-solid fa-tag"></i> {{ tag.name }}
+            </span>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--rgb-text-low); line-height: 1.4;">
+            Bu etiketle ilişkili görevlerin durumu, bağlı oldukları projeler ve atanmış diğer etiketleri yan panelden gözlemleyebilirsiniz.
+        </p>
+        
+        <a href="{{ url_for('dashboard') }}" class="cyber-btn cyber-btn-blue" style="margin-top: 10px;">
+            <i class="fa-solid fa-solar-panel"></i> KONTROL PANELİNE DÖN
+        </a>
+    </div>
+</section>
+
+<!-- BAY 2: Eşleşen Görevler Listesi (Yeşil Panel) -->
+<section class="cyber-panel panel-green" style="grid-column: span 2;">
+    <h2 class="panel-title">
+        <span><i class="fa-solid fa-list-check"></i> FİLTRELENEN GÖREV MATRİSİ</span>
+        <span style="font-size: 0.75rem; color: var(--rgb-green);">[{{ tasks|length }} EŞLEŞME]</span>
+    </h2>
+
+    <div class="tasks-grid">
+        {% if tasks %}
+            {% for item in tasks %}
+                <div class="task-card status-{{ item.task.status }}">
+                    <div class="task-header">
+                        <h4>{{ item.task.title }}</h4>
+                        <span class="status-badge {{ item.task.status }}">
+                            {{ 'Beklemede' if item.task.status == 'Pending' else ('Çalışılıyor' if item.task.status == 'In Progress' else 'Tamamlandı') }}
+                        </span>
+                    </div>
+                    
+                    <p>{{ item.task.description or 'Açıklama girilmedi.' }}</p>
+                    
+                    <div style="font-size: 0.8rem; color: var(--rgb-text-low); border-top: 1px dashed var(--rgb-gray); padding-top: 8px; margin-top: 5px;">
+                        <span><i class="fa-solid fa-diagram-project"></i> Proje: </span>
+                        <a href="{{ url_for('project_detail', project_id=item.task.project_id) }}" style="color: var(--rgb-green); font-weight: 600; text-decoration: none;">
+                            {{ item.project_name }}
+                        </a>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; border-top: 1px solid var(--rgb-gray); padding-top: 8px;">
+                        <a href="{{ url_for('project_detail', project_id=item.task.project_id) }}" class="cyber-btn cyber-btn-green" style="padding: 4px 8px; font-size: 0.7rem;">
+                            Projeye Git <i class="fa-solid fa-angles-right"></i>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else: %}
+            <div style="width: 100%; text-align: center; padding: 40px; border: 1px dashed var(--rgb-gray); color: var(--rgb-text-low); grid-column: span 2;">
+                <i class="fa-solid fa-circle-info" style="font-size: 2rem; margin-bottom: 15px; display: block;"></i>
+                Sistem genelinde "{{ tag.name }}" etiketine atanmış herhangi bir görev bulunamadı.
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- BAY 1: Yeni Etiket Tanımlama (Kırmızı Panel) -->
+<section class="cyber-panel panel-red">
+    <h2 class="panel-title">
+        <span><i class="fa-solid fa-plus-circle"></i> YENİ ETİKET TANIMLA</span>
+        <span style="font-size: 0.75rem; color: var(--rgb-red);">[SİSTEM_ETİKETİ]</span>
+    </h2>
+    <form action="{{ url_for('manage_tags') }}" method="POST" class="cyber-form">
+        <div class="form-group">
+            <label for="tag_name">Etiket Adı</label>
+            <input type="text" id="tag_name" name="name" class="cyber-input" placeholder="Etiket adı..." required autocomplete="off">
+        </div>
+        <button type="submit" class="cyber-btn cyber-btn-red">
+            <i class="fa-solid fa-square-plus"></i> ETİKET OLUŞTUR
+        </button>
+    </form>
+    
+    <div style="margin-top: 15px; font-size: 0.8rem; color: var(--rgb-text-low); line-height: 1.4;">
+        <p><i class="fa-solid fa-circle-info"></i> <strong>Açıklama:</strong> Etiketler projelere özel değildir, tüm sistem genelinde ortak kullanılır. Oluşturduğunuz etiketleri projelere girip görevlere atayabilirsiniz.</p>
+    </div>
+</section>
+
+<!-- BAY 2: Etiket Matris Havuzu (Mavi Panel) -->
+<section class="cyber-panel panel-blue" style="grid-column: span 2;">
+    <h2 class="panel-title">
+        <span><i class="fa-solid fa-tags"></i> KÜRESEL ETİKET MATRİSİ</span>
+        <span style="font-size: 0.75rem; color: var(--rgb-blue);">[{{ tags|length }} ADET]</span>
+    </h2>
+    
+    <div class="tags-pool">
+        {% if tags %}
+            {% for tag in tags %}
+                <div class="pool-tag-card">
+                    <span><i class="fa-solid fa-tag"></i> {{ tag.name }}</span>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <a href="{{ url_for('tasks_by_tag', tag_id=tag.id) }}" class="cyber-btn cyber-btn-blue" style="padding: 4px 10px; font-size: 0.75rem;">
+                            <i class="fa-solid fa-filter"></i> Görevleri Filtrele
+                        </a>
+                        <a href="{{ url_for('delete_tag', tag_id=tag.id) }}" 
+                           class="delete-link" 
+                           onclick="return confirm('Bu etiketi silmek istediğinize emin misiniz? Etiketin görevlerle olan tüm bağlantıları kaldırılacaktır.')"
+                           title="Etiketi Tamamen Sil">
+                            <i class="fa-solid fa-trash-can"></i> Sil
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else: %}
+            <div style="width: 100%; text-align: center; padding: 40px; border: 1px dashed var(--rgb-gray); color: var(--rgb-text-low);">
+                <i class="fa-solid fa-tags" style="font-size: 2rem; margin-bottom: 15px; display: block;"></i>
+                Sistemde tanımlı küresel etiket bulunamadı. Sol taraftaki arayüzü kullanarak yeni etiketler tanımlayın.
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

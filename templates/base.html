@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Proje ve Görev Yönetim Sistemi ⚡</title>
+    <!-- Sci-Fi HUD için Orbitron ve Rajdhani yazı tipleri -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- HUD Izgara Arka Plan Katmanı -->
+    <div class="hud-grid-overlay"></div>
+
+    <!-- Ana Kontrol Paneli Konteyneri -->
+    <div class="console-container">
+        
+        <!-- Üst HUD Panel -->
+        <header class="hud-header">
+            <div class="header-logo">
+                <span class="pulse-dot"></span>
+                <h1>PROJE_YONETIM_KONSOLU</h1>
+            </div>
+            <nav class="hud-nav">
+                <a href="{{ url_for('dashboard') }}" class="hud-nav-item {% if request.path == '/' or request.path.startswith('/project/') %}active{% endif %}">
+                    <i class="fa-solid fa-solar-panel"></i> KONTROL PANELİ
+                </a>
+                <a href="{{ url_for('manage_users') }}" class="hud-nav-item {% if request.path == '/users' %}active{% endif %}">
+                    <i class="fa-solid fa-users"></i> EKİP ÜYELERİ
+                </a>
+                <a href="{{ url_for('manage_tags') }}" class="hud-nav-item {% if request.path == '/tags' %}active{% endif %}">
+                    <i class="fa-solid fa-tags"></i> ETİKET MATRİSİ
+                </a>
+            </nav>
+            <div class="system-status">
+                <span class="status-label">SİSTEM DURUMU:</span>
+                <span class="status-value">AKTİF</span>
+            </div>
+        </header>
+
+        <!-- Sistem Mesajları / Flash Konsolu -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-console">
+                    {% for category, message in messages %}
+                        <div class="flash-alert alert-{{ category }}">
+                            <i class="fa-solid fa-circle-info"></i> {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Dinamik İçerik Alanı -->
+        <main class="console-workspace">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Alt Bilgi HUD -->
+        <footer class="hud-footer">
+            <div>PROJE VE GÖREV YÖNETİM SİSTEMİ © 2026 // ALL CODES COMPOSED OF PURE RGB VALUE MIXTURES</div>
+            <div class="rgb-indicator">
+                <span class="r-light">KONTROL</span>
+                <span class="g-light">UYGULAMA</span>
+                <span class="b-light">METADATA</span>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
