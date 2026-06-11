@@ -1,4 +1,4 @@
-# ⚡ Siber Proje Yönetim Sistemi (Cyber-PMS)
+# ⚡ Proje Yönetim Sistemi
 
 Siberpunk temalı, modüler ve yüksek etkileşimli bir **Proje & Görev Yönetimi** web uygulamasıdır. Ekiplerin projelerini, görev hiyerarşilerini, tarihlerini ve bütçelerini tek bir merkezden, adeta fütüristik bir terminalden yönetiyormuş hissiyle takip etmelerini sağlar.
 
