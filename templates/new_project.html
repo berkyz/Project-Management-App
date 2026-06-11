@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ YENİ PROJE BAŞLATILIYOR ⚡</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        #matrixCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.8;
+        }
+
+        .creation-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.8) 100%);
+        }
+
+        .creation-panel {
+            background: rgba(18, 20, 29, 0.85);
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--rgb-green);
+            box-shadow: 0 0 30px rgba(40, 255, 150, 0.4);
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+            clip-path: polygon(0 30px, 30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%);
+            animation: bootUp 1.2s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes bootUp {
+            0% {
+                transform: scale(0.9) translateY(50px);
+                opacity: 0;
+                filter: blur(10px);
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+                filter: blur(0);
+            }
+        }
+
+        .creation-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .creation-header h1 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--rgb-green);
+            text-shadow: 0 0 10px var(--rgba-green-glow);
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+
+    <div class="creation-container">
+        <div class="creation-panel">
+            <div class="creation-header">
+                <h1>SİSTEME YENİ PROJE ENTEGRE ET</h1>
+                <p style="color: var(--rgb-text-mid); font-size: 0.9rem;">Veritabanına yeni çekirdek modül ekleniyor...</p>
+            </div>
+            
+            <form action="{{ url_for('projects.create_project') }}" method="POST" class="cyber-form" style="border-color: var(--rgb-green);">
+                <div class="form-group">
+                    <label style="color: var(--rgb-green);">Proje Adı</label>
+                    <input type="text" name="name" class="cyber-input" style="border-color: rgba(40,255,150,0.5);" required autofocus autocomplete="off">
+                </div>
+                
+                <div class="form-group">
+                    <label style="color: var(--rgb-green);">Açıklama</label>
+                    <textarea name="description" class="cyber-input" rows="3" style="border-color: rgba(40,255,150,0.5); resize: none;"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label style="color: var(--rgb-green);">Başlangıç</label>
+                        <input type="date" name="start_date" class="cyber-input" style="border-color: rgba(40,255,150,0.5);">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label style="color: var(--rgb-green);">Bitiş</label>
+                        <input type="date" name="end_date" class="cyber-input" style="border-color: rgba(40,255,150,0.5);">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label style="color: var(--rgb-green);">Bütçe (₺)</label>
+                    <input type="number" name="budget" class="cyber-input" style="border-color: rgba(40,255,150,0.5);" placeholder="0.00" step="0.01">
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-top: 20px;">
+                    <a href="{{ url_for('main.dashboard') }}" class="cyber-btn" style="flex: 1; border-color: var(--rgb-gray); color: var(--rgb-text-mid);">
+                        İPTAL
+                    </a>
+                    <button type="submit" class="cyber-btn cyber-btn-green" style="flex: 2; font-size: 1.1rem; letter-spacing: 2px;">
+                        BAŞLAT
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Matrix Rain Animation Script -->
+    <script>
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレゲゼデベペオォコソトノホモヨョロゴゾドボポヴッン';
+        const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const nums = '0123456789';
+        const alphabet = katakana + latin + nums;
+
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+
+        const rainDrops = [];
+
+        for(let x = 0; x < columns; x++) {
+            rainDrops[x] = 1;
+        }
+
+        const draw = () => {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#28FF96';
+            ctx.font = fontSize + 'px monospace';
+
+            for(let i = 0; i < rainDrops.length; i++) {
+                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+
+                if(rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975){
+                    rainDrops[i] = 0;
+                }
+                rainDrops[i]++;
+            }
+        };
+
+        setInterval(draw, 30);
+        
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

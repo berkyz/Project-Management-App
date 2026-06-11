@@ -449,6 +449,10 @@ body::before {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
+    max-height: 550px;
+    overflow-y: auto;
+    padding-right: 10px;
+    padding-bottom: 10px;
 }
 
 .task-card {
@@ -635,6 +639,10 @@ body::before {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 10px;
+    padding-bottom: 10px;
 }
 
 .pool-tag-card {
@@ -657,4 +665,301 @@ body::before {
 .pool-tag-card:hover {
     border-color: var(--rgb-blue);
     box-shadow: 0 0 8px var(--rgba-blue-glow);
+}
+
+/* Sayfa Geçiş Animasyonu */
+.page-enter {
+    animation: fadeInSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+}
+
+@keyframes fadeInSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mor Panel & Butonlar */
+.cyber-panel.panel-purple {
+    border-color: rgba(170, 70, 255, 0.3);
+}
+.cyber-panel.panel-purple:hover {
+    box-shadow: 0 0 15px var(--rgba-purple-glow);
+    border-color: var(--rgb-purple);
+}
+.panel-purple .panel-title { color: var(--rgb-purple); text-shadow: 0 0 5px var(--rgba-purple-glow); border-color: rgba(170, 70, 255, 0.3); }
+
+.cyber-btn-purple {
+    background: rgba(170, 70, 255, 0.1);
+    border-color: var(--rgb-purple);
+    color: var(--rgb-purple);
+}
+.cyber-btn-purple:hover {
+    background: var(--rgb-purple);
+    color: var(--rgb-bg);
+    box-shadow: 0 0 15px var(--rgba-purple-glow);
+}
+
+/* Dikey Zaman Çizelgesi (Timeline) */
+.cyber-timeline {
+    position: relative;
+    padding-left: 30px;
+    margin-top: 20px;
+}
+.cyber-timeline::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--rgb-purple);
+    box-shadow: 0 0 8px var(--rgba-purple-glow);
+}
+.timeline-item {
+    position: relative;
+    margin-bottom: 25px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px dashed var(--rgb-gray);
+    border-left: 3px solid var(--rgb-purple);
+    transition: all 0.3s ease;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+}
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -32px;
+    top: 15px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--rgb-purple);
+    box-shadow: 0 0 10px var(--rgb-purple);
+}
+.timeline-item:hover {
+    background: rgba(170, 70, 255, 0.05);
+    border-color: var(--rgb-purple);
+    transform: translateX(5px);
+}
+.timeline-date {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    color: var(--rgb-purple);
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.timeline-content h4 {
+    font-size: 1.1rem;
+    color: var(--rgb-text-high);
+    margin-bottom: 5px;
+}
+.timeline-content p {
+    font-size: 0.85rem;
+    color: var(--rgb-text-mid);
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+/* Nabız (Pulse) Animasyonu */
+.cyber-pulse {
+    animation: cyberPulseAnim 2s infinite;
+}
+@keyframes cyberPulseAnim {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Sistem Asistanı (Yol Gösterici) */
+.cyber-assistant {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: rgba(18, 20, 29, 0.9);
+    border: 1px solid var(--rgb-blue);
+    padding: 15px 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 0 20px var(--rgba-blue-glow);
+    animation: slideInRight 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards, float 3s infinite ease-in-out;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+    clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+}
+.cyber-assistant i {
+    font-size: 2.5rem;
+    color: var(--rgb-blue);
+    text-shadow: 0 0 15px var(--rgb-blue);
+}
+.assistant-msg {
+    font-size: 0.85rem;
+    color: var(--rgb-text-high);
+    max-width: 280px;
+    line-height: 1.5;
+}
+.assistant-msg strong {
+    color: var(--rgb-green);
+    display: block;
+    margin-bottom: 5px;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1px;
+}
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(120%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Ağaç Şeması (Cyber Tree) - Oval Kare Tasarım */
+.cyber-tree-container {
+    width: 100%;
+    overflow-x: auto;
+    padding: 20px 0;
+    /* Custom kaydırma çubuğu için ufak dokunuş */
+}
+.cyber-tree-container::-webkit-scrollbar {
+    height: 10px;
+}
+.cyber-tree-container::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.2);
+    border-radius: 5px;
+}
+.cyber-tree-container::-webkit-scrollbar-thumb {
+    background: var(--rgb-purple);
+    border-radius: 5px;
+}
+
+.cyber-tree {
+    display: inline-flex;
+    justify-content: center;
+    min-width: 100%;
+}
+.cyber-tree ul {
+    padding-top: 20px; 
+    position: relative;
+    transition: all 0.5s;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding-left: 0;
+}
+.cyber-tree li {
+    text-align: center;
+    list-style-type: none;
+    position: relative;
+    padding: 20px 10px 0 10px;
+    transition: all 0.5s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Dallanma Çizgileri */
+.cyber-tree li::before, .cyber-tree li::after {
+    content: '';
+    position: absolute; top: 0; right: 50%;
+    border-top: 2px solid var(--rgb-purple);
+    width: 50%; height: 20px;
+}
+.cyber-tree li::after {
+    right: auto; left: 50%;
+    border-left: 2px solid var(--rgb-purple);
+}
+
+.cyber-tree li:only-child::after, .cyber-tree li:only-child::before {
+    display: none;
+}
+.cyber-tree li:only-child { padding-top: 0;}
+
+.cyber-tree li:first-child::before, .cyber-tree li:last-child::after {
+    border: 0 none;
+}
+.cyber-tree li:last-child::before {
+    border-right: 2px solid var(--rgb-purple);
+    border-radius: 0 5px 0 0;
+}
+.cyber-tree li:first-child::after {
+    border-radius: 5px 0 0 0;
+}
+
+/* Ebeveynden çocuğa inen çizgi */
+.cyber-tree ul ul::before {
+    content: '';
+    position: absolute; top: 0; left: 50%;
+    border-left: 2px solid var(--rgb-purple);
+    width: 0; height: 20px;
+}
+
+/* Oval Kare (Node) Düğüm Tasarımları */
+.cyber-tree .node {
+    border: 2px solid var(--rgb-purple);
+    padding: 15px;
+    color: var(--rgb-text-high);
+    border-radius: 20px; /* Oval Kare Görünümü */
+    background: rgba(18, 20, 29, 0.95);
+    box-shadow: 0 0 15px rgba(170, 70, 255, 0.15);
+    transition: all 0.3s ease;
+    min-width: 150px;
+    max-width: 200px;
+    position: relative;
+    z-index: 2;
+}
+
+.cyber-tree .node:hover {
+    background: rgba(170, 70, 255, 0.2);
+    box-shadow: 0 0 25px var(--rgba-purple-glow);
+    transform: translateY(-5px);
+    border-color: #d4aaff;
+}
+
+.cyber-tree .project-node {
+    border-color: var(--rgb-red);
+    box-shadow: 0 0 15px rgba(255, 60, 90, 0.25);
+    min-width: 200px;
+    padding: 20px;
+}
+.cyber-tree .project-node:hover {
+    box-shadow: 0 0 25px var(--rgba-red-glow);
+    border-color: #ff8899;
+}
+
+.cyber-tree .item-node {
+    border-color: var(--rgb-blue);
+    padding: 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    min-width: 120px;
+    box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
+}
+.cyber-tree .item-node:hover {
+    box-shadow: 0 0 15px var(--rgba-blue-glow);
+    border-color: #88eeff;
+}
+
+/* Google Charts Gantt Timeline - Arkaplan Çizgilerini ve Kareleri Tamamen Yok Etme */
+/* Google Timeline her zaman ilk <g> grubunda arkaplan gridini ve alternating row rect'leri çizer */
+#project_gantt_chart svg > g:first-of-type path,
+#project_gantt_chart svg > g:first-of-type rect,
+#user_gantt_chart svg > g:first-of-type path,
+#user_gantt_chart svg > g:first-of-type rect {
+    display: none !important;
+}
+
+/* Axis (eksen) text renklerini de daha cyber bir gri yapalım */
+#project_gantt_chart svg text,
+#user_gantt_chart svg text {
+    fill: var(--rgb-text-high) !important;
+    font-family: 'Rajdhani', sans-serif !important;
 }

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="cyber-panel panel-green" style="grid-column: span 3;">
+    <h2 class="panel-title">
+        <span><i class="fa-solid fa-chart-pie"></i> DETAYLI MALİYET VE BÜTÇE RAPORU</span>
+        <span style="font-size: 0.75rem; color: var(--rgb-green);">[FINANCE_REPORT]</span>
+    </h2>
+    <p style="font-size: 0.85rem; color: var(--rgb-text-mid); margin-bottom: 20px;">
+        Sistemdeki projelerin bütçe kullanım oranları, maliyet aşımı ve tamamlanma durumları.
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: 15px;">
+        {% if report_data %}
+            {% for item in report_data %}
+            <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--rgb-gray); padding: 15px; position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                    <h3 style="font-family: 'Orbitron', sans-serif; font-size: 1.1rem; color: var(--rgb-text-high);">
+                        <i class="fa-solid fa-folder"></i> {{ item.project.name }}
+                    </h3>
+                    <a href="{{ url_for('reports.print_report', project_id=item.project.id) }}" target="_blank" class="cyber-btn" style="border-color: var(--rgb-text-mid); color: var(--rgb-text-high); font-size: 0.75rem; padding: 4px 10px;">
+                        <i class="fa-solid fa-file-pdf"></i> PDF (Yazdır)
+                    </a>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <!-- Ekip İstatistiği -->
+                    <div style="border-left: 3px solid var(--rgb-purple); padding-left: 10px;">
+                        <span style="font-size: 0.75rem; color: var(--rgb-text-low);">PROJE EKİBİ</span>
+                        <div style="font-size: 1.2rem; font-weight: bold; margin-top: 5px; color: var(--rgb-purple);">
+                            <i class="fa-solid fa-users"></i> {{ item.team_size }} Üye
+                        </div>
+                    </div>
+
+                    <!-- Görev Durumu -->
+                    <div style="border-left: 3px solid var(--rgb-blue); padding-left: 10px;">
+                        <span style="font-size: 0.75rem; color: var(--rgb-text-low);">GÖREV İSTATİSTİĞİ</span>
+                        <div style="font-size: 1.1rem; font-weight: bold; margin-top: 5px;">
+                            {{ item.completed_tasks }} / {{ item.total_tasks }} Tamamlandı
+                        </div>
+                        <div style="font-size: 0.7rem; color: var(--rgb-text-mid); margin-top: 3px;">
+                            ({{ item.in_progress_tasks }} Çalışılıyor, {{ item.pending_tasks }} Beklemede)
+                        </div>
+                    </div>
+                    
+                    <!-- Bütçe -->
+                    <div style="border-left: 3px solid var(--rgb-green); padding-left: 10px;">
+                        <span style="font-size: 0.75rem; color: var(--rgb-text-low);">TOPLAM BÜTÇE</span>
+                        <div style="font-size: 1.2rem; font-weight: bold; margin-top: 5px; color: var(--rgb-green);">
+                            ₺{{ "%.2f"|format(item.budget) }}
+                        </div>
+                    </div>
+                    
+                    <!-- Harcanan (Maliyet) -->
+                    <div style="border-left: 3px solid var(--rgb-red); padding-left: 10px;">
+                        <span style="font-size: 0.75rem; color: var(--rgb-text-low);">HARCANAN MALİYET</span>
+                        <div style="font-size: 1.2rem; font-weight: bold; margin-top: 5px; color: var(--rgb-red);">
+                            ₺{{ "%.2f"|format(item.total_cost) }}
+                        </div>
+                    </div>
+
+                    <!-- Kalan Bütçe -->
+                    <div style="border-left: 3px solid {% if item.remaining_budget < 0 %}#FF2A2A{% else %}#28FF96{% endif %}; padding-left: 10px;">
+                        <span style="font-size: 0.75rem; color: var(--rgb-text-low);">KALAN BÜTÇE DURUMU</span>
+                        <div style="font-size: 1.2rem; font-weight: bold; margin-top: 5px; color: {% if item.remaining_budget < 0 %}#FF2A2A{% else %}#28FF96{% endif %};">
+                            ₺{{ "%.2f"|format(item.remaining_budget) }}
+                            {% if item.remaining_budget < 0 %} (Aşım){% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bütçe Barı -->
+                <div style="margin-top: 15px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--rgb-text-mid); margin-bottom: 5px;">
+                        <span>Kullanım Oranı</span>
+                        <span>
+                            {% if item.budget > 0 %}
+                                %{{ "%.1f"|format((item.total_cost / item.budget) * 100) }}
+                            {% else %}
+                                Belirsiz (Bütçe 0)
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1);">
+                        {% set percent = (item.total_cost / item.budget * 100) if item.budget > 0 else 0 %}
+                        {% set percent_capped = percent if percent <= 100 else 100 %}
+                        <div style="height: 100%; width: {{ percent_capped }}%; background: {% if percent > 100 %}var(--rgb-red){% else %}var(--rgb-green){% endif %};"></div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; padding: 40px; border: 1px dashed var(--rgb-gray); color: var(--rgb-text-low);">
+                <i class="fa-solid fa-chart-pie" style="font-size: 2rem; margin-bottom: 15px; display: block;"></i>
+                Raporlanacak proje bulunamadı.
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

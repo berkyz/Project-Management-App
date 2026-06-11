@@ -23,14 +23,20 @@
                 <h1>PROJE_YONETIM_KONSOLU</h1>
             </div>
             <nav class="hud-nav">
-                <a href="{{ url_for('dashboard') }}" class="hud-nav-item {% if request.path == '/' or request.path.startswith('/project/') %}active{% endif %}">
+                <a href="{{ url_for('main.dashboard') }}" class="hud-nav-item {% if request.path == '/' or request.path.startswith('/project/') %}active{% endif %}">
                     <i class="fa-solid fa-solar-panel"></i> KONTROL PANELİ
                 </a>
-                <a href="{{ url_for('manage_users') }}" class="hud-nav-item {% if request.path == '/users' %}active{% endif %}">
+                <a href="{{ url_for('users.manage_users') }}" class="hud-nav-item {% if request.path == '/users' %}active{% endif %}">
                     <i class="fa-solid fa-users"></i> EKİP ÜYELERİ
                 </a>
-                <a href="{{ url_for('manage_tags') }}" class="hud-nav-item {% if request.path == '/tags' %}active{% endif %}">
+                <a href="{{ url_for('tags.manage_tags') }}" class="hud-nav-item {% if request.path == '/tags' %}active{% endif %}">
                     <i class="fa-solid fa-tags"></i> ETİKET MATRİSİ
+                </a>
+                <a href="{{ url_for('reports.gantt_chart') }}" class="hud-nav-item {% if request.path == '/gantt' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-gantt"></i> GANTT ŞEMASI
+                </a>
+                <a href="{{ url_for('reports.detailed_report') }}" class="hud-nav-item {% if request.path == '/report' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-pie"></i> BÜTÇE VE RAPOR
                 </a>
             </nav>
             <div class="system-status">
@@ -53,7 +59,7 @@
         {% endwith %}
 
         <!-- Dinamik İçerik Alanı -->
-        <main class="console-workspace">
+        <main class="console-workspace page-enter">
             {% block content %}{% endblock %}
         </main>
 
@@ -67,5 +73,30 @@
             </div>
         </footer>
     </div>
+
+    <!-- Menü Gezinme ve Klavye Asistanı Scripti -->
+    <script>
+        document.addEventListener('keydown', function(e) {
+            // Eğer kullanıcı form elemanlarına veri giriyorsa yön tuşları çalışmasın
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+                return;
+            }
+            
+            const navItems = Array.from(document.querySelectorAll('.hud-nav-item'));
+            const activeIndex = navItems.findIndex(item => item.classList.contains('active'));
+            
+            if (e.key === 'ArrowRight') {
+                if (activeIndex < navItems.length - 1) {
+                    window.location.href = navItems[activeIndex + 1].href;
+                } else if (activeIndex === -1 && navItems.length > 0) {
+                     window.location.href = navItems[0].href;
+                }
+            } else if (e.key === 'ArrowLeft') {
+                if (activeIndex > 0) {
+                    window.location.href = navItems[activeIndex - 1].href;
+                }
+            }
+        });
+    </script>
 </body>
 </html>

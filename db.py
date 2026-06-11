@@ -136,6 +136,33 @@ class Database:
             );
         """)
 
+        # 7. Alt Görevler (Listeler) Tablosu
+        self.execute_query("""
+            CREATE TABLE IF NOT EXISTS task_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                task_id INTEGER NOT NULL,
+                item_text TEXT NOT NULL,
+                is_completed BOOLEAN DEFAULT 0,
+                FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE CASCADE
+            );
+        """)
+
+        # Yeni sütunları mevcut tablolara eklemeyi dene (Eğer yoksa)
+        alter_queries = [
+            "ALTER TABLE projects ADD COLUMN budget REAL DEFAULT 0;",
+            "ALTER TABLE projects ADD COLUMN start_date DATE;",
+            "ALTER TABLE projects ADD COLUMN end_date DATE;",
+            "ALTER TABLE tasks ADD COLUMN start_date DATE;",
+            "ALTER TABLE tasks ADD COLUMN end_date DATE;",
+            "ALTER TABLE tasks ADD COLUMN cost REAL DEFAULT 0;"
+        ]
+        
+        for q in alter_queries:
+            try:
+                self.execute_query(q)
+            except sqlite3.OperationalError:
+                pass # Sütun zaten varsa hata verir, görmezden gel
+
     # --- KULLANICI (USER) CRUD İŞLEMLERİ ---
 
     def create_user(self, username, email=None):
@@ -199,12 +226,12 @@ class Database:
 
     # --- PROJE CRUD İŞLEMLERİ ---
 
-    def create_project(self, name, description=None):
+    def create_project(self, name, description=None, budget=0, start_date=None, end_date=None):
         """
         Yeni bir proje oluşturur.
         """
-        query = "INSERT INTO projects (name, description) VALUES (?, ?)"
-        self.execute_query(query, (name, description))
+        query = "INSERT INTO projects (name, description, budget, start_date, end_date) VALUES (?, ?, ?, ?, ?)"
+        self.execute_query(query, (name, description, budget, start_date, end_date))
 
     def get_projects(self):
         """
@@ -222,7 +249,7 @@ class Database:
         rows = self.execute_query(query, (project_id,))
         return dict(rows[0]) if rows else None
 
-    def update_project(self, project_id, name=None, description=None):
+    def update_project(self, project_id, name=None, description=None, budget=None, start_date=None, end_date=None):
         """
         Proje bilgilerini günceller.
         """
@@ -234,6 +261,15 @@ class Database:
         if description is not None:
             fields.append("description = ?")
             params.append(description)
+        if budget is not None:
+            fields.append("budget = ?")
+            params.append(budget)
+        if start_date is not None:
+            fields.append("start_date = ?")
+            params.append(start_date)
+        if end_date is not None:
+            fields.append("end_date = ?")
+            params.append(end_date)
         
         if not fields:
             return
@@ -251,12 +287,12 @@ class Database:
 
     # --- GÖREV (TASK) CRUD İŞLEMLERİ ---
 
-    def create_task(self, project_id, title, description=None, status='Pending', assigned_to=None):
+    def create_task(self, project_id, title, description=None, status='Pending', assigned_to=None, start_date=None, end_date=None, cost=0):
         """
         Proje altına atanan kişi ile birlikte yeni görev ekler.
         """
-        query = "INSERT INTO tasks (project_id, title, description, status, assigned_to) VALUES (?, ?, ?, ?, ?)"
-        self.execute_query(query, (project_id, title, description, status, assigned_to))
+        query = "INSERT INTO tasks (project_id, title, description, status, assigned_to, start_date, end_date, cost) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        self.execute_query(query, (project_id, title, description, status, assigned_to, start_date, end_date, cost))
 
     def get_tasks(self, project_id=None):
         """
@@ -292,7 +328,7 @@ class Database:
         rows = self.execute_query(query, (task_id,))
         return dict(rows[0]) if rows else None
 
-    def update_task(self, task_id, title=None, description=None, status=None, assigned_to=None):
+    def update_task(self, task_id, title=None, description=None, status=None, assigned_to=None, start_date=None, end_date=None, cost=None):
         """
         Görev bilgilerini ve atanan kişiyi günceller.
         """
@@ -307,6 +343,15 @@ class Database:
         if status is not None:
             fields.append("status = ?")
             params.append(status)
+        if start_date is not None:
+            fields.append("start_date = ?")
+            params.append(start_date)
+        if end_date is not None:
+            fields.append("end_date = ?")
+            params.append(end_date)
+        if cost is not None:
+            fields.append("cost = ?")
+            params.append(cost)
         # assigned_to parametresini güncelleyebilmek için check (None veya tamsayı)
         fields.append("assigned_to = ?")
         params.append(assigned_to)
@@ -388,3 +433,22 @@ class Database:
         """
         rows = self.execute_query(query, (tag_id,))
         return [dict(row) for row in rows]
+
+    # --- ALT GÖREV / LİSTE İŞLEMLERİ ---
+
+    def create_task_item(self, task_id, item_text):
+        query = "INSERT INTO task_items (task_id, item_text) VALUES (?, ?)"
+        self.execute_query(query, (task_id, item_text))
+
+    def get_task_items(self, task_id):
+        query = "SELECT * FROM task_items WHERE task_id = ?"
+        rows = self.execute_query(query, (task_id,))
+        return [dict(row) for row in rows]
+
+    def toggle_task_item(self, item_id):
+        query = "UPDATE task_items SET is_completed = NOT is_completed WHERE id = ?"
+        self.execute_query(query, (item_id,))
+
+    def delete_task_item(self, item_id):
+        query = "DELETE FROM task_items WHERE id = ?"
+        self.execute_query(query, (item_id,))

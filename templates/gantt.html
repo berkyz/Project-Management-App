@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="cyber-panel panel-blue" style="grid-column: span 3;">
+    <h2 class="panel-title">
+        <span><i class="fa-solid fa-chart-gantt"></i> GANTT ŞEMALARI</span>
+        <span style="font-size: 0.75rem; color: var(--rgb-blue);">[ZAMAN_ÇİZELGESİ]</span>
+    </h2>
+    <p style="font-size: 0.85rem; color: var(--rgb-text-mid); margin-bottom: 20px;">
+        Proje ve görevlerin zaman içerisindeki dağılımı. Sadece başlangıç ve bitiş tarihi tanımlı olanlar gösterilir.
+    </p>
+
+    <!-- Google Charts Library -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <div style="margin-bottom: 30px;">
+        <h3 style="font-family: 'Orbitron', sans-serif; font-size: 1rem; color: var(--rgb-blue); margin-bottom: 10px;">PROJELERE GÖRE GÖREVLER</h3>
+        <div id="project_gantt_chart" style="width: 100%; min-height: 300px; background: rgba(0,0,0,0.3); border: 1px solid var(--rgb-gray);"></div>
+    </div>
+
+    <div>
+        <h3 style="font-family: 'Orbitron', sans-serif; font-size: 1rem; color: var(--rgb-green); margin-bottom: 10px;">ŞAHISA GÖRE GÖREVLER</h3>
+        <div id="user_gantt_chart" style="width: 100%; min-height: 300px; background: rgba(0,0,0,0.3); border: 1px solid var(--rgb-gray);"></div>
+    </div>
+</section>
+
+<script type="text/javascript">
+    google.charts.load('current', {'packages':['timeline']});
+    google.charts.setOnLoadCallback(drawCharts);
+
+    function drawCharts() {
+        drawProjectGantt();
+        drawUserGantt();
+    }
+
+    function drawProjectGantt() {
+        var container = document.getElementById('project_gantt_chart');
+        var chart = new google.visualization.Timeline(container);
+        var dataTable = new google.visualization.DataTable();
+
+        dataTable.addColumn({ type: 'string', id: 'Proje' });
+        dataTable.addColumn({ type: 'string', id: 'Görev' });
+        dataTable.addColumn({ type: 'date', id: 'Start' });
+        dataTable.addColumn({ type: 'date', id: 'End' });
+
+        var rows = [];
+        {% set sorted_tasks = tasks | selectattr('start_date') | selectattr('end_date') | sort(attribute='start_date') %}
+        {% for task in sorted_tasks %}
+            {% set ns = namespace(proj_name="Proje " ~ task.project_id) %}
+            {% for p in projects %}
+                {% if p.id == task.project_id %}
+                    {% set ns.proj_name = p.name %}
+                {% endif %}
+            {% endfor %}
+            
+            rows.push([
+                "{{ ns.proj_name }}",
+                "{{ task.title }}",
+                new Date("{{ task.start_date }}"),
+                new Date("{{ task.end_date }}")
+            ]);
+        {% endfor %}
+
+        if(rows.length > 0) {
+            dataTable.addRows(rows);
+            // Satır sayısına göre dinamik yükseklik (kırpılmayı önlemek için)
+            var uniqueLabels = new Set(rows.map(r => r[0])).size;
+            var chartHeight = (uniqueLabels * 50) + 80; // Her satır için ort. 50px + eksen boşluğu
+            if (chartHeight < 300) chartHeight = 300;
+            
+            var options = {
+                height: chartHeight,
+                backgroundColor: 'transparent',
+                timeline: { rowLabelStyle: { color: '#fff' }, barLabelStyle: { color: '#000' } },
+            };
+            chart.draw(dataTable, options);
+        } else {
+            container.innerHTML = "<p style='padding: 20px; color: #888;'>Gösterilecek tarihli görev bulunamadı.</p>";
+        }
+    }
+
+    function drawUserGantt() {
+        var container = document.getElementById('user_gantt_chart');
+        var chart = new google.visualization.Timeline(container);
+        var dataTable = new google.visualization.DataTable();
+
+        dataTable.addColumn({ type: 'string', id: 'Görevli' });
+        dataTable.addColumn({ type: 'string', id: 'Görev' });
+        dataTable.addColumn({ type: 'date', id: 'Start' });
+        dataTable.addColumn({ type: 'date', id: 'End' });
+
+        var rows = [];
+        {% set sorted_tasks = tasks | selectattr('start_date') | selectattr('end_date') | sort(attribute='start_date') %}
+        {% for task in sorted_tasks %}
+            var assignee = "{{ task.assignee_name or 'Atanmamış' }}";
+            rows.push([
+                assignee,
+                "{{ task.title }}",
+                new Date("{{ task.start_date }}"),
+                new Date("{{ task.end_date }}")
+            ]);
+        {% endfor %}
+
+        if(rows.length > 0) {
+            dataTable.addRows(rows);
+            // Satır sayısına göre dinamik yükseklik (kırpılmayı önlemek için)
+            var uniqueLabels = new Set(rows.map(r => r[0])).size;
+            var chartHeight = (uniqueLabels * 50) + 80;
+            if (chartHeight < 300) chartHeight = 300;
+
+            var options = {
+                height: chartHeight,
+                backgroundColor: 'transparent',
+                timeline: { rowLabelStyle: { color: '#fff' }, barLabelStyle: { color: '#000' } },
+                colors: ['#28FF96', '#FF2A2A', '#2A9DFF']
+            };
+            chart.draw(dataTable, options);
+        } else {
+            container.innerHTML = "<p style='padding: 20px; color: #888;'>Gösterilecek tarihli görev bulunamadı.</p>";
+        }
+    }
+</script>
+{% endblock %}

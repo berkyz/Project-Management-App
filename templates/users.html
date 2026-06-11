@@ -7,7 +7,7 @@
         <span><i class="fa-solid fa-user-plus"></i> EKİP ÜYESİ EKLE</span>
         <span style="font-size: 0.75rem; color: var(--rgb-red);">[SİSTEM_KULLANICISI]</span>
     </h2>
-    <form action="{{ url_for('manage_users') }}" method="POST" class="cyber-form">
+    <form action="{{ url_for('users.manage_users') }}" method="POST" class="cyber-form">
         <div class="form-group">
             <label for="username">Kullanıcı Adı</label>
             <input type="text" id="username" name="username" class="cyber-input" placeholder="Kullanıcı adı..." required autocomplete="off">
@@ -51,7 +51,7 @@
                             <td style="padding: 12px; font-weight: bold; color: var(--rgb-text-high);">{{ user.username }}</td>
                             <td style="padding: 12px; color: var(--rgb-text-mid);">{{ user.email or '-' }}</td>
                             <td style="padding: 12px; text-align: right;">
-                                <a href="{{ url_for('delete_user', user_id=user.id) }}" 
+                                <a href="{{ url_for('users.delete_user', user_id=user.id) }}" 
                                    class="delete-link" 
                                    onclick="return confirm('Bu kullanıcıyı silmek istediğinize emin misiniz? Atandığı tüm görevler atamasız kalacaktır.')"
                                    title="Kullanıcıyı Sil">

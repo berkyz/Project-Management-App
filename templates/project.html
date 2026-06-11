@@ -8,7 +8,7 @@
         <span style="font-size: 0.75rem; color: var(--rgb-red);">[ID: {{ project.id }}]</span>
     </h2>
     
-    <form action="{{ url_for('update_project', project_id=project.id) }}" method="POST" class="cyber-form">
+    <form action="{{ url_for('projects.update_project', project_id=project.id) }}" method="POST" class="cyber-form">
         <div class="form-group">
             <label for="proj_name">Proje Adı</label>
             <input type="text" id="proj_name" name="name" class="cyber-input" value="{{ project.name }}" required autocomplete="off">
@@ -16,6 +16,20 @@
         <div class="form-group">
             <label for="proj_desc">Açıklama</label>
             <textarea id="proj_desc" name="description" class="cyber-input" rows="3" style="resize: none;">{{ project.description }}</textarea>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+                <label for="proj_start">Başlangıç Tarihi</label>
+                <input type="date" id="proj_start" name="start_date" class="cyber-input" value="{{ project.start_date }}">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label for="proj_end">Bitiş Tarihi</label>
+                <input type="date" id="proj_end" name="end_date" class="cyber-input" value="{{ project.end_date }}">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="proj_budget">Bütçe (₺)</label>
+            <input type="number" id="proj_budget" name="budget" class="cyber-input" value="{{ project.budget }}" step="0.01">
         </div>
         <button type="submit" class="cyber-btn cyber-btn-red">
             <i class="fa-solid fa-save"></i> BİLGİLERİ GÜNCELLE
@@ -29,7 +43,7 @@
         </h3>
 
         <!-- Üye Ekleme Formu -->
-        <form action="{{ url_for('add_user_to_project', project_id=project.id) }}" method="POST" class="cyber-form" style="margin-bottom: 15px; padding: 10px;">
+        <form action="{{ url_for('projects.add_user_to_project', project_id=project.id) }}" method="POST" class="cyber-form" style="margin-bottom: 15px; padding: 10px;">
             <div class="form-group">
                 <label for="user_id">Ekip Üyesi Ekle</label>
                 <select id="user_id" name="user_id" class="cyber-input" style="background: rgb(28, 30, 43);" required>
@@ -50,7 +64,7 @@
                 {% for p_user in project_users %}
                     <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); padding: 6px 12px; border: 1px solid var(--rgb-gray); clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);">
                         <span style="font-size: 0.85rem; color: var(--rgb-text-high);"><i class="fa-solid fa-user"></i> {{ p_user.username }}</span>
-                        <a href="{{ url_for('remove_user_from_project', project_id=project.id, user_id=p_user.id) }}" 
+                        <a href="{{ url_for('projects.remove_user_from_project', project_id=project.id, user_id=p_user.id) }}" 
                            style="color: var(--rgb-red); font-size: 0.75rem; text-decoration: none;" 
                            onclick="return confirm('Üyeyi projeden çıkarmak istediğinize emin misiniz?')">
                             Kaldır
@@ -64,7 +78,7 @@
     </div>
     
     <div style="border-top: 1px solid var(--rgb-gray); padding-top: 15px; margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
-        <a href="{{ url_for('dashboard') }}" class="cyber-btn" style="border-color: var(--rgb-text-mid); color: var(--rgb-text-mid); width: 100%;">
+        <a href="{{ url_for('main.dashboard') }}" class="cyber-btn" style="border-color: var(--rgb-text-mid); color: var(--rgb-text-mid); width: 100%;">
             <i class="fa-solid fa-chevron-left"></i> KONTROL PANELİNE DÖN
         </a>
     </div>
@@ -80,7 +94,7 @@
     <div class="tasks-grid">
         {% if tasks %}
             {% for task in tasks %}
-                <div class="task-card status-{{ task.status }}">
+                <div class="task-card status-{{ task.status }}" id="task-{{ task.id }}">
                     <div class="task-header">
                         <h4>{{ task.title }}</h4>
                         <span class="status-badge {{ task.status }}">
@@ -95,6 +109,33 @@
                         <i class="fa-solid fa-user-gear" style="color: var(--rgb-green);"></i> 
                         <span>Görevli: <strong>{{ task.assignee_name or 'Atanmamış' }}</strong></span>
                     </div>
+
+                    <!-- Tarih ve Maliyet Bilgisi -->
+                    <div style="margin-top: 5px; font-size: 0.75rem; color: var(--rgb-text-mid); display: flex; justify-content: space-between;">
+                        <span><i class="fa-solid fa-calendar-days"></i> {{ task.start_date or '?' }} - {{ task.end_date or '?' }}</span>
+                        <span style="color: var(--rgb-red);"><i class="fa-solid fa-coins"></i> ₺{{ task.cost or 0 }}</span>
+                    </div>
+                    
+                    <!-- Alt Görev Listesi (Checklist) -->
+                    <div style="margin-top: 10px; border-top: 1px solid var(--rgb-gray); padding-top: 10px;">
+                        <h5 style="font-size: 0.8rem; margin-bottom: 5px;"><i class="fa-solid fa-list-check"></i> Alt Görevler</h5>
+                        <ul style="list-style: none; padding: 0; font-size: 0.8rem;">
+                            {% for item in task['items'] %}
+                                <li style="display: flex; align-items: center; gap: 5px; margin-bottom: 4px;">
+                                    <a href="{{ url_for('tasks.toggle_task_item', task_id=task.id, item_id=item.id, project_id=project.id) }}" style="color: {{ 'var(--rgb-green)' if item.is_completed else 'var(--rgb-text-mid)' }};">
+                                        <i class="fa-solid {{ 'fa-square-check' if item.is_completed else 'fa-square' }}"></i>
+                                    </a>
+                                    <span style="{{ 'text-decoration: line-through; color: var(--rgb-text-low);' if item.is_completed else '' }}">{{ item.item_text }}</span>
+                                    <a href="{{ url_for('tasks.delete_task_item', task_id=task.id, item_id=item.id, project_id=project.id) }}" style="margin-left: auto; color: var(--rgb-red);" title="Sil"><i class="fa-solid fa-xmark"></i></a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <form action="{{ url_for('tasks.add_task_item', task_id=task.id) }}" method="POST" style="display: flex; gap: 5px; margin-top: 5px;">
+                            <input type="hidden" name="project_id" value="{{ project.id }}">
+                            <input type="text" name="item_text" class="cyber-input" style="padding: 2px 5px; font-size: 0.75rem;" placeholder="Yeni alt görev..." required>
+                            <button type="submit" class="cyber-btn cyber-btn-green" style="padding: 2px 5px; font-size: 0.75rem;">Ekle</button>
+                        </form>
+                    </div>
                     
                     <!-- Görev Etiketleri -->
                     <div class="task-tags-row">
@@ -102,7 +143,7 @@
                             {% for tag in task.tags %}
                                 <span class="cyber-tag">
                                     <i class="fa-solid fa-tag"></i> {{ tag.name }}
-                                    <a href="{{ url_for('remove_tag_from_task', task_id=task.id, tag_id=tag.id, project_id=project.id) }}" class="cyber-tag-remove" title="Etiketi Kaldır">
+                                    <a href="{{ url_for('tasks.remove_tag_from_task', task_id=task.id, tag_id=tag.id, project_id=project.id) }}" class="cyber-tag-remove" title="Etiketi Kaldır">
                                         <i class="fa-solid fa-xmark"></i>
                                     </a>
                                 </span>
@@ -116,7 +157,7 @@
                     <div class="task-actions">
                         <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
                             <!-- Durum ve Görevli Güncelleme Formu -->
-                            <form action="{{ url_for('update_task', task_id=task.id) }}" method="POST" style="display: flex; flex-direction: column; gap: 8px;">
+                            <form action="{{ url_for('tasks.update_task', task_id=task.id) }}" method="POST" style="display: flex; flex-direction: column; gap: 8px;">
                                 <input type="hidden" name="project_id" value="{{ project.id }}">
                                 <input type="hidden" name="title" value="{{ task.title }}">
                                 <input type="hidden" name="description" value="{{ task.description }}">
@@ -137,13 +178,17 @@
                                         {% endfor %}
                                     </select>
                                 </div>
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="date" name="start_date" class="cyber-input" style="flex: 1; padding: 2px; font-size: 0.75rem;" value="{{ task.start_date }}">
+                                    <input type="date" name="end_date" class="cyber-input" style="flex: 1; padding: 2px; font-size: 0.75rem;" value="{{ task.end_date }}">
+                                    <input type="number" name="cost" class="cyber-input" style="flex: 1; padding: 2px; font-size: 0.75rem;" placeholder="Maliyet" value="{{ task.cost }}" step="0.01">
+                                </div>
                                 <button type="submit" class="cyber-btn cyber-btn-green" style="padding: 4px 10px; font-size: 0.75rem; width: 100%;">
-                                    <i class="fa-solid fa-arrows-rotate"></i> Durum / Görevli Güncelle
-                                </button>
+                                    <i class="fa-solid fa-arrows-rotate"></i> Güncelle
                             </form>
 
                             <!-- Etiket Atama Formu -->
-                            <form action="{{ url_for('add_tag_to_task', task_id=task.id) }}" method="POST" class="action-form">
+                            <form action="{{ url_for('tasks.add_tag_to_task', task_id=task.id) }}" method="POST" class="action-form">
                                 <input type="hidden" name="project_id" value="{{ project.id }}">
                                 <select name="tag_id" class="cyber-select" onchange="this.form.submit()" style="width: 100%;">
                                     <option value="" disabled selected>+ Etiket Ekle</option>
@@ -158,7 +203,7 @@
                     </div>
 
                     <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
-                        <a href="{{ url_for('delete_task', task_id=task.id, project_id=project.id) }}" 
+                        <a href="{{ url_for('tasks.delete_task', task_id=task.id, project_id=project.id) }}" 
                            class="delete-link" 
                            onclick="return confirm('Bu görevi silmek istediğinize emin misiniz?')">
                             <i class="fa-solid fa-trash"></i> Görevi Sil
@@ -182,7 +227,7 @@
         <span style="font-size: 0.75rem; color: var(--rgb-blue);">[YENİ_GÖREV]</span>
     </h2>
     
-    <form action="{{ url_for('create_task', project_id=project.id) }}" method="POST" class="cyber-form">
+    <form action="{{ url_for('tasks.create_task', project_id=project.id) }}" method="POST" class="cyber-form">
         <div class="form-group">
             <label for="task_title">Görev Başlığı</label>
             <input type="text" id="task_title" name="title" class="cyber-input" placeholder="Yapılacak iş..." required autocomplete="off">
@@ -199,6 +244,20 @@
                     <option value="{{ p_user.id }}">{{ p_user.username }}</option>
                 {% endfor %}
             </select>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+                <label for="task_start">Başlangıç</label>
+                <input type="date" id="task_start" name="start_date" class="cyber-input">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label for="task_end">Bitiş</label>
+                <input type="date" id="task_end" name="end_date" class="cyber-input">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="task_cost">Maliyet Tahmini (₺)</label>
+            <input type="number" id="task_cost" name="cost" class="cyber-input" placeholder="0.00" step="0.01">
         </div>
         <div class="form-group">
             <label for="task_status">İlk Durum</label>
@@ -220,4 +279,150 @@
         </p>
     </div>
 </section>
+
+<!-- BAY 4: Otomatik Oluşturulan Proje Zaman Çizelgesi (Mor Panel - Ağaç Yapısı) -->
+<section class="cyber-panel panel-purple" style="grid-column: span 3;">
+    <h2 class="panel-title">
+        <span><i class="fa-solid fa-sitemap cyber-pulse"></i> PROJE İŞ AKIŞI (KRONOLOJİK AĞAÇ)</span>
+        <span style="font-size: 0.75rem; color: var(--rgb-purple);">[ORGANİZASYON_ŞEMASI]</span>
+    </h2>
+    <p style="font-size: 0.85rem; color: var(--rgb-text-mid); margin-bottom: 10px;">
+        Görevleriniz ve alt görevleriniz (detaylar), hiyerarşik ve kronolojik bir ağaç yapısında sıralanmıştır. İş akışını fare veya dokunmatik ekranla sağa/sola kaydırabilirsiniz.
+    </p>
+
+    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 10px;">
+        <button type="button" onclick="zoomTree(0.1)" class="cyber-btn cyber-btn-blue" style="padding: 4px 10px; font-size: 0.75rem;"><i class="fa-solid fa-magnifying-glass-plus"></i> Yaklaştır</button>
+        <button type="button" onclick="zoomTree(-0.1)" class="cyber-btn cyber-btn-blue" style="padding: 4px 10px; font-size: 0.75rem;"><i class="fa-solid fa-magnifying-glass-minus"></i> Uzaklaştır</button>
+        <button type="button" onclick="zoomTree(0, true)" class="cyber-btn cyber-btn-blue" style="padding: 4px 10px; font-size: 0.75rem;"><i class="fa-solid fa-expand"></i> Sıfırla</button>
+    </div>
+
+    <div class="cyber-tree-container">
+        {% if task_tree %}
+            {% macro render_task_node(node_task) %}
+                <li>
+                    <div class="node task-node" onclick="focusTask('{{ node_task.id }}')" style="cursor: pointer;" title="Detayları görmek için tıklayın">
+                        <span style="font-size: 0.7rem; color: var(--rgb-text-mid); display: block; margin-bottom: 5px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 5px;">
+                            <i class="fa-solid fa-calendar-day"></i> {{ node_task.start_date }}
+                        </span>
+                        <h4 style="font-family: 'Orbitron', sans-serif; color: var(--rgb-text-high); font-size: 0.9rem; margin-bottom: 5px;">{{ node_task.title }}</h4>
+                        <div style="font-size: 0.7rem; color: var(--rgb-text-mid); margin-bottom: 5px;">
+                            <i class="fa-solid fa-user-astronaut"></i> {{ node_task.assignee_name or 'Atanmamış' }}
+                        </div>
+                        <span class="status-badge {{ node_task.status }}" style="font-size: 0.6rem; padding: 2px 5px;">
+                            {{ 'Beklemede' if node_task.status == 'Pending' else ('Çalışılıyor' if node_task.status == 'In Progress' else 'Tamamlandı') }}
+                        </span>
+                    </div>
+                    
+                    {% if node_task['items'] or node_task['children'] %}
+                    <ul>
+                        <!-- Alt Görevler (Maddeler) -->
+                        {% for item in node_task['items'] %}
+                        <li>
+                            <div class="node item-node">
+                                <i class="fa-solid {{ 'fa-check-circle' if item.is_completed else 'fa-circle-dot' }}" style="color: {{ 'var(--rgb-green)' if item.is_completed else 'var(--rgb-text-mid)' }};"></i> 
+                                <span style="{{ 'text-decoration: line-through; opacity: 0.7;' if item.is_completed else '' }}">{{ item.item_text }}</span>
+                            </div>
+                        </li>
+                        {% endfor %}
+                        
+                        <!-- Bağımlı (Sonradan Başlayan) Görevler -->
+                        {% for child in node_task['children'] %}
+                            {{ render_task_node(child) }}
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </li>
+            {% endmacro %}
+
+            <div class="cyber-tree">
+                <ul>
+                    <li>
+                        <!-- Kök Düğüm: Proje Adı -->
+                        <div class="node project-node">
+                            <i class="fa-solid fa-diagram-project" style="font-size: 1.5rem; color: var(--rgb-purple); margin-bottom: 8px; display: block;"></i>
+                            <strong>{{ project.name }}</strong>
+                            <div style="font-size: 0.65rem; color: var(--rgb-text-low); margin-top: 5px;">ANA PROJE</div>
+                        </div>
+                        
+                        <!-- Dallar: Kök Görevler -->
+                        <ul>
+                            {% for root_task in task_tree %}
+                                {{ render_task_node(root_task) }}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 30px; color: var(--rgb-text-low); font-style: italic; border: 1px dashed var(--rgb-gray);">
+                Henüz tarih ataması yapılmış bir görev bulunmamaktadır. Akışı oluşturmak için görevlere başlangıç tarihi giriniz.
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- SİSTEM ASİSTANI (YOL GÖSTERİCİ) -->
+<div class="cyber-assistant">
+    <i class="fa-solid fa-robot"></i>
+    <div class="assistant-msg">
+        {% if not project_users %}
+            <strong>ADIM 1: ÜYE ATAMASI</strong>
+            Bu projede hiç personel yok. Görev verebilmek için sol panelden projeye üye atayın.
+        {% elif not tasks %}
+            <strong>ADIM 2: GÖREV OLUŞTURMA</strong>
+            Personel eklendi. Şimdi sağdaki panelden yeni bir görev oluşturup personeli görevlendirin.
+        {% else %}
+            {% set scheduled_tasks = tasks | selectattr('start_date') | list %}
+            {% if scheduled_tasks|length == 0 %}
+                <strong>ADIM 3: ZAMAN ÇİZELGESİ</strong>
+                Görevler oluşturuldu. Kronolojik çizelgede görünmeleri için detaylarına "Başlangıç Tarihi" girmelisiniz.
+            {% else %}
+                <strong>SİSTEM AKTİF!</strong>
+                İş akışı tıkır tıkır işliyor. Görevleri güncelleyebilir veya alt görevler (checklist) girebilirsiniz.
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Ağaç Zoom ve Odaklanma Scripti -->
+<script>
+    let currentZoom = 1;
+    function zoomTree(step, reset=false) {
+        const tree = document.querySelector('.cyber-tree');
+        if (!tree) return;
+        
+        if (reset) {
+            currentZoom = 1;
+        } else {
+            currentZoom += step;
+            if (currentZoom < 0.4) currentZoom = 0.4;
+            if (currentZoom > 2.5) currentZoom = 2.5;
+        }
+        
+        // CSS zoom property adjusts the actual element dimensions,
+        // so horizontal scrollbars will update correctly!
+        tree.style.zoom = currentZoom;
+    }
+    
+    function focusTask(taskId) {
+        const el = document.getElementById('task-' + taskId);
+        if (el) {
+            // Task matrisine kaydır
+            el.scrollIntoView({behavior: 'smooth', block: 'center'});
+            
+            // Görsel efekt ile kullanıcının dikkatini çek
+            el.style.transition = 'all 0.5s';
+            el.style.boxShadow = '0 0 30px var(--rgba-blue-glow)';
+            el.style.transform = 'scale(1.05)';
+            el.style.borderColor = 'var(--rgb-blue)';
+            
+            setTimeout(() => {
+                el.style.boxShadow = '';
+                el.style.transform = '';
+                el.style.borderColor = '';
+            }, 2000);
+        }
+    }
+</script>
+
 {% endblock %}

@@ -7,39 +7,41 @@
         <span><i class="fa-solid fa-plus-circle"></i> YENİ PROJE EKLE</span>
         <span style="font-size: 0.75rem; color: var(--rgb-red);">[PROJE_GİRİŞİ]</span>
     </h2>
-    <form action="{{ url_for('create_project') }}" method="POST" class="cyber-form">
-        <div class="form-group">
-            <label for="name">Proje Adı</label>
-            <input type="text" id="name" name="name" class="cyber-input" placeholder="Proje adı..." required autocomplete="off">
+    <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 20px 0;">
+        <i class="fa-solid fa-satellite-dish cyber-pulse" style="font-size: 3rem; color: var(--rgb-red); text-shadow: 0 0 15px var(--rgba-red-glow);"></i>
+        
+        <div>
+            <h3 style="font-family: 'Orbitron', sans-serif; font-size: 1.2rem; margin-bottom: 10px;">SİSTEM BAŞLATICI</h3>
+            <p style="font-size: 0.85rem; color: var(--rgb-text-mid); line-height: 1.4;">
+                Yeni bir modül veya iş akışı entegre etmek için Proje Başlatma Konsolu'na geçiş yapın. 
+            </p>
         </div>
-        <div class="form-group">
-            <label for="description">Proje Açıklaması</label>
-            <textarea id="description" name="description" class="cyber-input" rows="4" placeholder="Projenin temel hedefleri..." style="resize: none;"></textarea>
-        </div>
-        <button type="submit" class="cyber-btn cyber-btn-red">
-            <i class="fa-solid fa-square-plus"></i> PROJE OLUŞTUR
-        </button>
-    </form>
-    
-    <div style="margin-top: 15px; font-size: 0.8rem; color: var(--rgb-text-low); line-height: 1.4;">
-        <p><i class="fa-solid fa-microchip"></i> <strong>Sistem Notu:</strong> Eklenen projeler veritabanına anında işlenir. Alt görevler ve proje üyeleri projelerin detay ekranlarından yönetilir.</p>
+
+        <a href="{{ url_for('projects.create_project') }}" class="cyber-btn cyber-btn-red" style="width: 100%; font-size: 1rem; padding: 15px;">
+            <i class="fa-solid fa-power-off"></i> YENİ PROJE BAŞLAT
+        </a>
     </div>
 </section>
 
 <!-- BAY 2: Aktif Projeler Matrisi (Yeşil Panel) -->
 <section class="cyber-panel panel-green" style="grid-column: span 1;">
-    <h2 class="panel-title">
+    <h2 class="panel-title" style="display: flex; justify-content: space-between; align-items: center;">
         <span><i class="fa-solid fa-folder-tree"></i> PROJELER LİSTESİ</span>
-        <span style="font-size: 0.75rem; color: var(--rgb-green);">[{{ projects|length }} ADET]</span>
+        <div>
+            <a href="{{ url_for('main.fetch_external_data') }}" class="cyber-btn" style="padding: 4px 10px; font-size: 0.75rem; border-color: var(--rgb-green); color: var(--rgb-green);">
+                <i class="fa-solid fa-cloud-arrow-down"></i> VERİ ÇEK
+            </a>
+            <span style="font-size: 0.75rem; color: var(--rgb-green);">[{{ projects|length }} ADET]</span>
+        </div>
     </h2>
     
     <div class="project-list">
         {% if projects %}
             {% for proj in projects %}
-                <div class="project-card">
+                <div class="project-card" style="animation: fadeInSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: {{ loop.index0 * 0.15 }}s; opacity: 0;">
                     <div class="project-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <h3>{{ proj.name }}</h3>
-                        <a href="{{ url_for('delete_project', project_id=proj.id) }}" 
+                        <a href="{{ url_for('projects.delete_project', project_id=proj.id) }}" 
                            class="delete-link" 
                            onclick="return confirm('Bu projeyi ve ilişkili TÜM görevleri silmek istediğinize emin misiniz?')"
                            title="Projeyi Sil">
@@ -63,7 +65,7 @@
                         <span class="task-counter">
                             <i class="fa-solid fa-list-check"></i> {{ proj.completed_tasks }} / {{ proj.total_tasks }} GÖREV TAMAMLANDI
                         </span>
-                        <a href="{{ url_for('project_detail', project_id=proj.id) }}" class="cyber-btn cyber-btn-green" style="padding: 6px 12px; font-size: 0.75rem;">
+                        <a href="{{ url_for('projects.project_detail', project_id=proj.id) }}" class="cyber-btn cyber-btn-green" style="padding: 6px 12px; font-size: 0.75rem;">
                             DETAYLAR <i class="fa-solid fa-angles-right"></i>
                         </a>
                     </div>
@@ -93,7 +95,7 @@
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             {% if all_tags %}
                 {% for tag in all_tags %}
-                    <a href="{{ url_for('tasks_by_tag', tag_id=tag.id) }}" class="cyber-tag">
+                    <a href="{{ url_for('tags.tasks_by_tag', tag_id=tag.id) }}" class="cyber-tag">
                         <i class="fa-solid fa-tag"></i> {{ tag.name }}
                     </a>
                 {% endfor %}

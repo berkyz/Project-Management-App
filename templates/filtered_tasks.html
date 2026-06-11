@@ -20,7 +20,7 @@
             Bu etiketle ilişkili görevlerin durumu, bağlı oldukları projeler ve atanmış diğer etiketleri yan panelden gözlemleyebilirsiniz.
         </p>
         
-        <a href="{{ url_for('dashboard') }}" class="cyber-btn cyber-btn-blue" style="margin-top: 10px;">
+        <a href="{{ url_for('main.dashboard') }}" class="cyber-btn cyber-btn-blue" style="margin-top: 10px;">
             <i class="fa-solid fa-solar-panel"></i> KONTROL PANELİNE DÖN
         </a>
     </div>
@@ -48,13 +48,13 @@
                     
                     <div style="font-size: 0.8rem; color: var(--rgb-text-low); border-top: 1px dashed var(--rgb-gray); padding-top: 8px; margin-top: 5px;">
                         <span><i class="fa-solid fa-diagram-project"></i> Proje: </span>
-                        <a href="{{ url_for('project_detail', project_id=item.task.project_id) }}" style="color: var(--rgb-green); font-weight: 600; text-decoration: none;">
+                        <a href="{{ url_for('projects.project_detail', project_id=item.task.project_id) }}" style="color: var(--rgb-green); font-weight: 600; text-decoration: none;">
                             {{ item.project_name }}
                         </a>
                     </div>
                     
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; border-top: 1px solid var(--rgb-gray); padding-top: 8px;">
-                        <a href="{{ url_for('project_detail', project_id=item.task.project_id) }}" class="cyber-btn cyber-btn-green" style="padding: 4px 8px; font-size: 0.7rem;">
+                        <a href="{{ url_for('projects.project_detail', project_id=item.task.project_id) }}" class="cyber-btn cyber-btn-green" style="padding: 4px 8px; font-size: 0.7rem;">
                             Projeye Git <i class="fa-solid fa-angles-right"></i>
                         </a>
                     </div>
